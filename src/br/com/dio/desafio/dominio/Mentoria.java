@@ -6,12 +6,18 @@ public class Mentoria extends Conteudo{
 
     private LocalDate data;
 
+    public Mentoria() {
+        super();
+    }
+
+    public Mentoria(String titulo, String descricao, LocalDate data) {
+        super(titulo, descricao);
+        setData(data);
+    }
+
     @Override
     public double calcularXp() {
         return XP_PADRAO + 20d;
-    }
-
-    public Mentoria() {
     }
 
     public LocalDate getData() {
@@ -19,6 +25,12 @@ public class Mentoria extends Conteudo{
     }
 
     public void setData(LocalDate data) {
+        if (data == null) {
+            throw new IllegalArgumentException("Data da mentoria não pode ser nula");
+        }
+        if (data.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Data da mentoria não pode ser no passado");
+        }
         this.data = data;
     }
 
@@ -28,6 +40,7 @@ public class Mentoria extends Conteudo{
                 "titulo='" + getTitulo() + '\'' +
                 ", descricao='" + getDescricao() + '\'' +
                 ", data=" + data +
+                ", xp=" + calcularXp() +
                 '}';
     }
 }

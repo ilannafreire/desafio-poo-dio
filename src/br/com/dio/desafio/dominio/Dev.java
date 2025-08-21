@@ -7,7 +7,16 @@ public class Dev {
     private Set<Conteudo> conteudosInscritos = new LinkedHashSet<>();
     private Set<Conteudo> conteudosConcluidos = new LinkedHashSet<>();
 
+    public Dev() {}
+
+    public Dev(String nome) {
+        setNome(nome);
+    }
+
     public void inscreverBootcamp(Bootcamp bootcamp){
+        if (bootcamp == null) {
+            throw new IllegalArgumentException("Bootcamp não pode ser nulo");
+        }
         this.conteudosInscritos.addAll(bootcamp.getConteudos());
         bootcamp.getDevsInscritos().add(this);
     }
@@ -18,48 +27,52 @@ public class Dev {
             this.conteudosConcluidos.add(conteudo.get());
             this.conteudosInscritos.remove(conteudo.get());
         } else {
-            System.err.println("Você não está matriculado em nenhum conteúdo!");
+            throw new IllegalStateException("Você não está matriculado em nenhum conteúdo!");
         }
     }
 
     public double calcularTotalXp() {
-        Iterator<Conteudo> iterator = this.conteudosConcluidos.iterator();
-        double soma = 0;
-        while(iterator.hasNext()){
-            double next = iterator.next().calcularXp();
-            soma += next;
-        }
-        return soma;
-
-        /*return this.conteudosConcluidos
+        return this.conteudosConcluidos
                 .stream()
                 .mapToDouble(Conteudo::calcularXp)
-                .sum();*/
+                .sum();
     }
 
+    public double calcularProgressoPercentual() {
+        int totalConteudos = conteudosInscritos.size() + conteudosConcluidos.size();
+        if (totalConteudos == 0) return 0.0;
+        return (double) conteudosConcluidos.size() / totalConteudos * 100;
+    }
+
+    public boolean temConteudoPendente() {
+        return !conteudosInscritos.isEmpty();
+    }
 
     public String getNome() {
         return nome;
     }
 
     public void setNome(String nome) {
-        this.nome = nome;
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nome não pode ser nulo ou vazio");
+        }
+        this.nome = nome.trim();
     }
 
     public Set<Conteudo> getConteudosInscritos() {
-        return conteudosInscritos;
+        return new LinkedHashSet<>(conteudosInscritos); // Retorna cópia para preservar encapsulamento
     }
 
     public void setConteudosInscritos(Set<Conteudo> conteudosInscritos) {
-        this.conteudosInscritos = conteudosInscritos;
+        this.conteudosInscritos = new LinkedHashSet<>(conteudosInscritos);
     }
 
     public Set<Conteudo> getConteudosConcluidos() {
-        return conteudosConcluidos;
+        return new LinkedHashSet<>(conteudosConcluidos); // Retorna cópia para preservar encapsulamento
     }
 
     public void setConteudosConcluidos(Set<Conteudo> conteudosConcluidos) {
-        this.conteudosConcluidos = conteudosConcluidos;
+        this.conteudosConcluidos = new LinkedHashSet<>(conteudosConcluidos);
     }
 
     @Override
@@ -67,11 +80,22 @@ public class Dev {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Dev dev = (Dev) o;
-        return Objects.equals(nome, dev.nome) && Objects.equals(conteudosInscritos, dev.conteudosInscritos) && Objects.equals(conteudosConcluidos, dev.conteudosConcluidos);
+        return Objects.equals(nome, dev.nome);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(nome, conteudosInscritos, conteudosConcluidos);
+        return Objects.hash(nome);
+    }
+
+    @Override
+    public String toString() {
+        return "Dev{" +
+                "nome='" + nome + '\'' +
+                ", xpTotal=" + calcularTotalXp() +
+                ", progresso=" + String.format("%.1f", calcularProgressoPercentual()) + "%" +
+                ", conteudosPendentes=" + conteudosInscritos.size() +
+                ", conteudosConcluidos=" + conteudosConcluidos.size() +
+                '}';
     }
 }
